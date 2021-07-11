@@ -39,9 +39,9 @@ int main(int argc, char* argv[]) {
 
 	parameters_defination.add_options()
 		("input,i", boost::program_options::value<std::string>(), "输入的文件 Example: video.mp4")
-		("output,o", boost::program_options::value<std::string>()->default_value("output001.avi"), "输出的文件 Example: output001.avi")
+		("output,o", boost::program_options::value<std::string>()->default_value("output001.mp4"), "输出的文件 Example: output001.mpt")
 		("watermark,w", boost::program_options::value<std::string>()->default_value("2019213336WRL"), "水印内容")
-		("type,t", boost::program_options::value<std::string>()->default_value("video"), "处理数据类型,图片或者视频")
+		("type,t", boost::program_options::value<std::string>()->default_value("pic"), "处理数据类型,图片或者视频")
 		("dump,d", boost::program_options::value<bool>()->default_value(false), "输出JPG序列")
 		("position,p", boost::program_options::value<double>()->default_value(0.2), "水印位置，默认 0.2")
 		("frame,f", boost::program_options::value<int>(), "指定处理帧数量")
@@ -59,6 +59,13 @@ int main(int argc, char* argv[]) {
 	catch (...) {
 		std::cerr << "输入了未定义参数!\n";
 	}
+
+	std::cout << "输入参数:\n<";
+	int i = 0;
+	for (; i < argc; i++) {
+		std::wcout << i << "$" << argv[i] << "><";
+	}
+	std::cout << "total:" << i + 1 << ">" << std::endl;
 
 	if (parameters_map.count("help")) {
 		std::cout << parameters_defination << std::endl;
@@ -87,7 +94,7 @@ int main(int argc, char* argv[]) {
 				src = cv::imread(inputFile, cv::IMREAD_COLOR);
 
 				if (src.empty()) {
-					fprintf(stderr, "图片读取失败%s\n", inputFile.c_str());
+					fprintf(stderr, "图片读取失败:", inputFile.c_str());
 					return 1;
 				}
 
@@ -104,9 +111,8 @@ int main(int argc, char* argv[]) {
 				std::string outfile = inputFile + "_decoded_";
 				for (int i = 0; i < result.size(); i++) {
 					cv::imwrite(outfile + std::to_string(i) + ".jpg", result[i]);
-					fprintf(stderr, "文件已保存%s\n", outfile.c_str());
+					std::cout << "文件已保存:" << outfile << std::endl;
 				}
-
 
 				return 0;
 			}
@@ -145,7 +151,7 @@ int main(int argc, char* argv[]) {
 					}
 
 					cv::imwrite(outputPath, result);
-					std::cout << "文件已保存%s\n" << outputPath << std::endl;
+					std::cout << "文件已保存:" << outputPath << std::endl;
 
 					return 0;
 				}
@@ -154,14 +160,14 @@ int main(int argc, char* argv[]) {
 
 					cv::VideoCapture inputVideo(inputFile);
 					if (!inputVideo.isOpened()) {
-						std::cout << "视频读取失败%s\n" << inputFile << std::endl;
+						std::cout << "视频读取失败:" << inputFile << std::endl;
 						return -1;
 					}
 
 					int totalFrameCount = inputVideo.get(cv::CAP_PROP_FRAME_COUNT);
 					int currentFrameCount = 0;
 
-					std::string outputPath = "output001.avi";
+					std::string outputPath = "output001.mp4";
 
 					if (parameters_map.count("output")) {
 						outputPath = parameters_map["output"].as<std::string>();
@@ -213,7 +219,7 @@ int main(int argc, char* argv[]) {
 						if (dumpFrame) {
 							std::string outfile = "frame" + std::to_string(currentFrameCount) + ".jpg";
 							cv::imwrite(outfile, result);
-							std::cout << "文件已保存%s\n" << outfile << std::endl;
+							std::cout << "文件已保存:" << outfile << std::endl;
 						}
 
 						fprintf(stderr, "Frame %d / %d\r", currentFrameCount, totalFrameCount);
